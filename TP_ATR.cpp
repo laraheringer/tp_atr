@@ -19,6 +19,9 @@
 
 using namespace std;
 
+typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);
+typedef unsigned* CAST_LPDWORD;
+
 
 DWORD WINAPI ThreadLeituraInspecao;		//Thread para Leitura de mensagens provenientes do sistema de inspeção.
 DWORD WINAPI ThreadCapturaDefeitos;    //Thread para Captura de defeitos das tiras metálicas e exibe na tela de defeitos.
@@ -27,103 +30,122 @@ DWORD WINAPI ThreadExibeDefeitos;    //Exibe na tela mensagens de defeitos super
 DWORD WINAPI ThreadExibeDados;      //Exibe na tela mensagens referentes ao processo de laminação.
 DWORD WINAPI ThreadLeituraTeclado; //Tratamento de entradas do teclado.
 
-DWORD WINAPI ThreadFun(LPVOID lpParam) {
-    cout << "Thread em execucao" << endl;
+DWORD WINAPI ThreadFun() {
+    cout << "Thread em execucao\n" << endl;
+    Sleep(8000);
+    cout << "Encerrando thread\n" << endl;
     return 0;
 }
 
 //THREAD PRIMÁRIA
 int main()
 {
-    HANDLE hThreads;
+    HANDLE hThreads[6];
     DWORD IdLeituraDados, IdCapturaDefeitos, IdCapturaDados, IdExibeDefeitos, IdExibeDados, IdLeituraTeclado;
+    DWORD dwRet;
 
-    hThreads = CreateThread(
+    hThreads[0] = (HANDLE) (HANDLE) _beginthreadex(
         NULL,
         0,
-        ThreadFun,
+        (CAST_FUNCTION)ThreadFun,
         NULL,
         0,
-        & IdLeituraDados);
+        (CAST_LPDWORD)&IdLeituraDados);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdLeituraDados << endl;
+    if (hThreads[0] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdLeituraDados << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
 
-    hThreads = CreateThread(
+    hThreads[1] = (HANDLE)(HANDLE)_beginthreadex(
         NULL,
         0,
-        ThreadFun,
+        (CAST_FUNCTION)ThreadFun,
         NULL,
         0,
-        &IdCapturaDefeitos);
+        (CAST_LPDWORD)&IdCapturaDefeitos);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdCapturaDefeitos << endl;
+    if (hThreads[1] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdCapturaDefeitos << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
-    hThreads = CreateThread(
-        NULL,
-        0,
-        ThreadFun,
-        NULL,
-        0,
-        &IdCapturaDados);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdCapturaDados << endl;
+    hThreads[2] = (HANDLE)(HANDLE)_beginthreadex(
+        NULL,
+        0,
+        (CAST_FUNCTION)ThreadFun,
+        NULL,
+        0,
+        (CAST_LPDWORD)&IdCapturaDados);
+
+    if (hThreads[2] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdCapturaDados << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
-    hThreads = CreateThread(
-        NULL,
-        0,
-        ThreadFun,
-        NULL,
-        0,
-        &IdExibeDefeitos);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdExibeDefeitos << endl;
+    hThreads[3] = (HANDLE)(HANDLE)_beginthreadex(
+        NULL,
+        0,
+        (CAST_FUNCTION)ThreadFun,
+        NULL,
+        0,
+        (CAST_LPDWORD)&IdExibeDefeitos);
+
+    if (hThreads[3] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdExibeDefeitos << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
-    hThreads = CreateThread(
-        NULL,
-        0,
-        ThreadFun,
-        NULL,
-        0,
-        &IdExibeDados);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdExibeDados << endl;
+    hThreads[4] = (HANDLE)(HANDLE)_beginthreadex(
+        NULL,
+        0,
+        (CAST_FUNCTION)ThreadFun,
+        NULL,
+        0,
+        (CAST_LPDWORD)&IdExibeDados);
+
+    if (hThreads[4] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdExibeDados << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
-    hThreads = CreateThread(
-        NULL,
-        0,
-        ThreadFun,
-        NULL,
-        0,
-        &IdLeituraTeclado);
 
-    if (hThreads == NULL) {
-        cout << "Erro na criacao da thread" << IdLeituraTeclado << endl;
+    hThreads[5] = (HANDLE)(HANDLE)_beginthreadex(
+        NULL,
+        0,
+        (CAST_FUNCTION)ThreadFun,
+        NULL,
+        0,
+        (CAST_LPDWORD)&IdLeituraTeclado);
+
+    if (hThreads[5] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdLeituraTeclado << endl;
     }
     else {
-        cout << "Thread criada com sucesso" << endl;
+        cout << "Thread criada com sucesso\n" << endl;
     }
 
-    
+    Sleep(5000);
+    cout << "Esperando encerramento das threads\n" << endl;
+
+    dwRet = WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
+
+    // Fecha todos os handles de objetos do kernel
+    for (int i = 0; i < 6; ++i)
+        CloseHandle(hThreads[i]);
+
+    cout << "Encerrando thread principal\n" << endl;
+
+    return EXIT_SUCCESS;
+
 }
 
