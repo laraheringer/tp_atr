@@ -15,13 +15,11 @@
 #include <iostream>
 #include <thread>
 #include <stdlib.h>
-#include <process.h>
 #include <string>
+#include <process.h>
 #include <conio.h>
-#include <pthread.h>
-#include <semaphore.h>
-
 #define HAVE_STRUCT_TIMESPEC
+
 
 using namespace std;
 
@@ -38,9 +36,6 @@ DWORD WINAPI ThreadCapturaDefeitos();       //Thread que irá capturar mensagens
 DWORD WINAPI ThreadExibeDefeitos();    //Exibe na tela mensagens de defeitos superficiais obtidos na captura de defeitos.
 DWORD WINAPI ThreadExibeDados();      //Exibe na tela mensagens referentes ao processo de laminação.
 
-// Objetos de sincronização
-sem_t novoDado;        //Semáforo para indicar que uma nova mensagem foi adicionada no buffer
-sem_t posicaoLivre;    //Semáforo para indicar que um novo espaço no buffer está disponível
 
 //Variáveis globais
 int nTecla;
@@ -50,24 +45,9 @@ int pDados = 0;
 int pDefeitos = 0;
 int nseq = 0;
 
-//Funcoes auxiliares
-void Wait(sem_t* Semaforo) {
-    int status;
-    status = sem_wait(Semaforo);
-    if (status != 0) {
-        printf("Erro na obtencao do semaforo! Codigo = %x\n", errno);
-        exit(0);
-    }
-}
+HANDLE novoDado;
+HANDLE posicaoLivre;
 
-void Signal(sem_t* Semaforo) {
-    int status;
-    status = sem_post(Semaforo);
-    if (status != 0) {
-        printf("Erro na liberacao do semaforo! Codigo = %x\n", errno);
-        exit(0);
-    }
-}
 
 string CompletaZeros(int numero, int digitos) {
     string numString = to_string(numero);
@@ -88,7 +68,7 @@ string GeraAlfaNumerico(int nCaracteres, bool hifen = false) {
         alfaNumerico += 'A' + rand() % 26;
     }
 
-    int numero = (rand() % 9999) + 1;
+    int numero = rand() % 9999 + 1;
 
     alfaNumerico += hifen ? "-" + CompletaZeros(numero, 4) : CompletaZeros(numero, 4);
 
@@ -105,9 +85,9 @@ string HoraLocal() {
 string MensagemDefeito() {
     string mensagem;
     nseq == 99999 ? nseq = 1 : nseq++;
-    int cadeira = (rand() % 6) + 1;
-    int gravidade = (rand() % 10) + 1; // Qual deve ser o range?
-    int classe = (rand() % 9) + 1;
+    int cadeira = rand() % 6 + 1;
+    int gravidade = rand() % 10 + 1; // Qual deve ser o range?
+    int classe = rand() % 9 + 1;
 
 
     mensagem = CompletaZeros(nseq, 5) + "/22/" + CompletaZeros(cadeira, 2) + "/" + CompletaZeros(gravidade, 2) + "/" + to_string(classe) + "/" + GeraAlfaNumerico(2) + "/" + HoraLocal();
@@ -143,24 +123,13 @@ int TipoMensagem(string mensagem) {
 //THREAD PRIMÁRIA
 int main()
 {
-    HANDLE hThreads[3];
-    DWORD IdLeituraDados, IdCapturaDados, IdCapturaDefeitos,IdExibeDefeitos,idExibeDados;
+    HANDLE hThreads[6];
+    DWORD IdLeituraDados, IdCapturaDados, IdCapturaDefeitos, IdExibeDefeitos, idExibeDados;
     DWORD dwRet;
     int status;
 
     srand((unsigned int)time(NULL));
 
-    status = sem_init(&novoDado, 0, 0);
-    if (status != 0) {
-        printf("Erro na inicializacao do semaforo ! Codigo = %d\n", errno);
-        exit(0);
-    }
-
-    status = sem_init(&posicaoLivre, 0, TAM_BUFF);
-    if (status != 0) {
-        printf("Erro na inicializacao do semaforo ! Codigo = %d\n", errno);
-        exit(0);
-    }
 
     hThreads[0] = (HANDLE) (HANDLE) _beginthreadex(
         NULL,
@@ -186,7 +155,7 @@ int main()
         (CAST_LPDWORD)&IdCapturaDados);
 
     if (hThreads[1] == NULL) {
-        cout << "Erro na criacao da thread\n" << IdCapturaDados << endl;
+        cout << "Erro na criacao da thread\n" << IdLeituraDados << endl;
     }
     else {
         cout << "Thread criada com sucesso\n" << endl;
@@ -201,42 +170,37 @@ int main()
         (CAST_LPDWORD)&IdCapturaDefeitos);
 
     if (hThreads[2] == NULL) {
-        cout << "Erro na criacao da thread\n" << IdCapturaDefeitos << endl;
+        cout << "Erro na criacao da thread\n" << IdCapturaDados << endl;
     }
     else {
         cout << "Thread criada com sucesso\n" << endl;
     }
-    hThreads[2] = (HANDLE)(HANDLE)_beginthreadex(
+
+   
+    hThreads[3] = (HANDLE)(HANDLE)_beginthreadex(
         NULL,
         0,
         (CAST_FUNCTION)ThreadExibeDefeitos,
         NULL,
         0,
-        (CAST_LPDWORD)&IExibeDefeitos);
+        (CAST_LPDWORD)&IdExibeDefeitos);
 
-    if (hThreads[2] == NULL) {
-        cout << "Erro na criacao da thread\n" << IdExibeDefeitosDefeitos << endl;
+    if (hThreads[3] == NULL) {
+        cout << "Erro na criacao da thread\n" << IdExibeDefeitos << endl;
     }
     else {
         cout << "Thread criada com sucesso\n" << endl;
     }
 
-    do {
-        nTecla = _getch();
-    } while (nTecla != ESC);
-    cout << "Esperando encerramento das threads\n" << endl;
-
-    dwRet = WaitForMultipleObjects(3, hThreads, TRUE, INFINITE);
-
-    hThreads[2] = (HANDLE)(HANDLE)_beginthreadex(
+    hThreads[4] = (HANDLE)(HANDLE)_beginthreadex(
         NULL,
         0,
         (CAST_FUNCTION)ThreadExibeDados,
         NULL,
         0,
-        (CAST_LPDWORD)&IExibeDados);
+        (CAST_LPDWORD)&IdExibeDados);
 
-    if (hThreads[2] == NULL) {
+    if (hThreads[4] == NULL) {
         cout << "Erro na criacao da thread\n" << IdExibeDados << endl;
     }
     else {
@@ -248,11 +212,11 @@ int main()
     } while (nTecla != ESC);
     cout << "Esperando encerramento das threads\n" << endl;
 
-    dwRet = WaitForMultipleObjects(3, hThreads, TRUE, INFINITE);
-
     // Fecha todos os handles de objetos do kernel
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i) {
         CloseHandle(hThreads[i]);
+    }
+        
 
     cout << "Encerrando thread principal\n" << endl;
 
@@ -262,21 +226,20 @@ int main()
 
 DWORD WINAPI ThreadLeituraInspecao() {
     do {
-        Sleep(10000);
 
         string dado = MensagemDadosProcesso();
-        Wait(&posicaoLivre);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
         cout << "Novo dado inserido:" << dado << endl;
         buffer[pLivre] = dado;
         pLivre = (pLivre + 1) % TAM_BUFF;
-        Signal(&novoDado);
+        ReleaseSemaphore(posicaoLivre, 1, NULL);
 
         string defeito = MensagemDefeito();
-        Wait(&posicaoLivre);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
         cout << "Novo defeito inserido:" << defeito << endl;
         buffer[pLivre] = defeito;
         pLivre = (pLivre + 1) % TAM_BUFF;
-        Signal(&novoDado);
+        ReleaseSemaphore(novoDado, 1, NULL);
 
     } while (nTecla != ESC);
 
@@ -288,14 +251,14 @@ DWORD WINAPI ThreadLeituraInspecao() {
 
 DWORD WINAPI ThreadCapturaDefeitos() {
     do {
-        Wait(&novoDado);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
         string mensagem = buffer[pDefeitos];
         if (TipoMensagem(mensagem) == 2) {
             cout << "Novo defeito lido:" << mensagem << endl;
-            Signal(&posicaoLivre);
+            ReleaseSemaphore(posicaoLivre, 1, NULL);
         }
         else {
-            Signal(&novoDado);
+            ReleaseSemaphore(novoDado, 1, NULL);
         }
         pDefeitos = (pDefeitos + 1) % TAM_BUFF;
 
@@ -309,14 +272,14 @@ DWORD WINAPI ThreadCapturaDefeitos() {
 
 DWORD WINAPI ThreadCapturaDados() {
     do {
-        Wait(&novoDado);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
         string mensagem = buffer[pDados];
         if (TipoMensagem(mensagem) == 1) {
             cout << "Novo dado lido:" << mensagem << endl;
-            Signal(&posicaoLivre);
+            ReleaseSemaphore(posicaoLivre, 1, NULL);
         }
         else {
-            Signal(&novoDado);
+            ReleaseSemaphore(novoDado, 1, NULL);
         }
         pDados = (pDados + 1) % TAM_BUFF;
 
@@ -330,14 +293,15 @@ DWORD WINAPI ThreadCapturaDados() {
 DWORD WINAPI ThreadExibeDefeitos() {
 
     do {
-        wait(&novoDado);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
+        string mensagem = buffer[pDados];
         string dprocesso = buffer[pDefeitos];
         if (TipoMensagem(mensagem) == 2) {
             cout << "Defeito detectado: \n" << MensagemDefeito() << endl;
-            Signal(&posicaoLivre);
+            ReleaseSemaphore(posicaoLivre, 1, NULL);
         }
         else {
-            Signal(&novoDado);
+            ReleaseSemaphore(novoDado, 1, NULL);
         }
         pDefeitos = (pDefeitos + 1) % TAM_BUFF;
 
@@ -351,14 +315,15 @@ DWORD WINAPI ThreadExibeDefeitos() {
 DWORD WINAPI ThreadExibeDados() {
 
     do {
-        wait(&novoDado);
+        WaitForMultipleObjects(6, hThreads, TRUE, INFINITE);
+        string mensagem = buffer[pDados];
         string dprocesso = buffer[pDefeitos];
         if (TipoMensagem(mensagem) == 1) {
             cout << "STATUS-->Processo de laminacao: \n" << MensagemDadosProcesso() << endl;
-            Signal(&posicaoLivre);
+            ReleaseSemaphore(posicaoLivre, 1, NULL);
         }
         else {
-            Signal(&novoDado);
+            ReleaseSemaphore(novoDado, 1, NULL);
         }
         pDados = (pDados + 1) % TAM_BUFF;
 
