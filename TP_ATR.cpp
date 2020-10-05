@@ -61,6 +61,7 @@ HANDLE hDefeitoEvent;      // Sinaliza a Thread Captura Defeitos que há um defe
 HANDLE hExibeDefeito;    // Sinaliza um novo defeito a ser exibido
 HANDLE hExibeDado;       // Sinaliza um novo dado a ser exibido
 
+
 //Variáveis globais
 int nTecla;
 string buffer[TAM_BUFF];
@@ -278,6 +279,8 @@ int main()
     cout << "Encerrando thread principal\n" << endl;
 
     return EXIT_SUCCESS;
+
+   
 
 }
 
