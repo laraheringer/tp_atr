@@ -8,51 +8,46 @@
 *  O programa é composto pelo processo de exibição de dados na tela
 **********************************************************************************/
 
-#include<Windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <iostream>
+#include <stdlib.h>
+#include <conio.h>		
 
 using namespace std;
+	
 
-int main() {
+int main()
+{
 
-	HANDLE hProcess;
-	HANDLE hThread;
+	BOOL bCreateProcess;
 	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	DWORD dwProcessExibeDefeitos = 0;
-	DWORD dwThreadExibeDefeitos = 0;
+	PROCESS_INFORMATION NewProcess;
+
 	ZeroMemory(&si, sizeof(si));
-	ZeroMemory(&pi, sizeof(pi));
-	BOOL bCreateProcess = NULL;
+	si.cb = sizeof(si);
 
 	bCreateProcess = CreateProcess(
-		L "",
+		"C:\\TP_ATR.exe.recipe",
 		NULL,
 		NULL,
 		NULL,
 		FALSE,
-		0,
+		CREATE_NEW_CONSOLE,
 		NULL,
-		NULL,
+		"C:\\Windows",
 		&si,
-		&pi);
-
-	if (bCreateProcess == FALSE) {
-		cout << "ERRO NA CRIACAO DO PROCESSO" << GetLastError() << endl;
+		&NewProcess);
+	if (!bCreateProcess) {
+		cout << "Erro na criacao do processo! Codigo = %d\n" << GetLastError << endl;
 	}
 	else {
-		cout << "PROCESSO CRIADO COM SUCESSO" << endl;
+		cout << "Processo Criado com sucesso!" << endl;
 	}
 
-	cout << "Process ID" << pi.dwProcessId << endl;
-	cout << "Thread ID" << pi.dwThreadId << endl;
-	cout << "GetProcessID" << GetProcessId(pi.hProcess) << endl;
-	cout << "GetProcessID" << GetProcessId(pi.hThread) << endl;
+	
 
-	WaitForSingleObject(pi.hProcess, INFINITE);
 
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
-
-	return 0;
+	return EXIT_SUCCESS;
 }
+

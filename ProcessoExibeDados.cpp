@@ -5,56 +5,48 @@
 *
 *  Trabalho Final: "Detecção de defeitos em tiras metálicas"
 *
-*  O programa é composto pelo processo de exibição de dados na tela
+*  O programa a seguir é composto pelo processo de exibição de dados na tela
 **********************************************************************************/
 
-#include<Windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <iostream>
+#include <stdlib.h>
+#include <conio.h>		
 
 using namespace std;
 
-int main() {
+int main()
+{
 
-	HANDLE hProcess;
-	HANDLE hThread;
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	DWORD dwProcessExibeDados = 0;
-	DWORD dwThreadExibeDados = 0;
+	BOOL bCreateProcess;
+	STARTUPINFO si;				    
+	PROCESS_INFORMATION NewProcess;	
+
 	ZeroMemory(&si, sizeof(si));
-	ZeroMemory(&pi, sizeof(pi));
-	BOOL bCreateProcess = NULL;
+	si.cb = sizeof(si);	
 
 	bCreateProcess = CreateProcess(
-		L "",
-		NULL,
-		NULL,
-		NULL,
-		FALSE,
-		0,
-		NULL,
-		NULL,
-		&si,
-		&pi);
-
-	if (bCreateProcess == FALSE) {
-		cout << "ERRO NA CRIACAO DO PROCESSO" << GetLastError()<<endl;
+		"C:\\TP_ATR.exe.recipe", 
+		NULL,                       
+		NULL,                       
+		NULL,                       
+		FALSE,	                     
+		CREATE_NEW_CONSOLE,	     
+		NULL,	                     
+		"C:\\Windows",              
+		&si,			             
+		&NewProcess);	            
+	if (!bCreateProcess) {
+		cout << "Erro na criacao do processo! Codigo = %d\n" << GetLastError << endl;
 	}
 	else {
-		cout << "PROCESSO CRIADO COM SUCESSO" << endl;
+		cout << "Processo Criado com sucesso!" << endl;
 	}
 
-	cout << "Process ID" << pi.dwProcessId << endl;
-	cout << "Thread ID" << pi.dwThreadId << endl;
-	cout << "GetProcessID" << GetProcessId(pi.hProcess) << endl;
-	cout << "GetProcessID" << GetProcessId(pi.hThread) << endl;
-
-	WaitForSingleObject(pi.hProcess, INFINITE);
-
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
+	printf("Digite uma tecla qualquer para criar uma instancia do Firefox:\n");
+	_getch();
 
 
-
-	return 0;
-}
+	return EXIT_SUCCESS;
+}	
