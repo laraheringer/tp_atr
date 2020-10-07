@@ -166,6 +166,47 @@ int main()
     hExibeDado = CreateEvent(NULL, TRUE, FALSE, L"ExibeDadoEvento");
     hExibeDefeito = CreateEvent(NULL, TRUE, FALSE, L"ExibeDefeitoEvento");
 
+    BOOL status;
+    BOOL status2;
+    STARTUPINFO si[2];
+    PROCESS_INFORMATION NewProcess;
+
+    ZeroMemory(&si, sizeof(si));
+    si[2].cb = sizeof(si);
+
+    status = CreateProcess(
+        L"..\\Debug\\ProcessoExibeDefeitos.exe",
+        NULL,
+        NULL,
+        NULL,
+        FALSE,
+        CREATE_NEW_CONSOLE,
+        NULL,
+        L"..\\ProcessoExibeDefeitos",
+        &si[0],
+        &NewProcess);
+    if (!status)
+        cout << "Erro na criacao do processo Exibicao de defeitos!  ERRO: " << GetLastError() << endl;
+    else
+        cout << "Processo Exibicao de defeitos criado com sucesso! " << endl;
+
+
+    status2 = CreateProcess(
+        L"..\\Debug\\ProcessoExibeDados.exe",
+        NULL,
+        NULL,
+        NULL,
+        FALSE,
+        CREATE_NEW_CONSOLE,
+        NULL,
+        L"..\\ProcessoExibeDados",
+        &si[1],
+        &NewProcess);
+    if (!status)
+        cout << "Erro na criacao do processo Exibicao de Dados!  ERRO: " << GetLastError() << endl;
+    else
+        cout << "Processo Exibicao de dados criado com sucesso! " << endl;
+
 
     hThreads[0] = (HANDLE)(HANDLE)_beginthreadex(
         NULL,
@@ -448,6 +489,8 @@ DWORD WINAPI ThreadCapturaDados() {
 }
 
 DWORD WINAPI ThreadLeituraTeclado() {
+
+
     do {
         nTecla = _getch();
 

@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>		
 
@@ -20,34 +21,6 @@ using namespace std;
 int main()
 {
 
-	BOOL bCreateProcess;
-	STARTUPINFO si;
-	PROCESS_INFORMATION NewProcess;
-
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-
-	bCreateProcess = CreateProcess(
-		"C:\\TP_ATR.exe.recipe",
-		NULL,
-		NULL,
-		NULL,
-		FALSE,
-		CREATE_NEW_CONSOLE,
-		NULL,
-		"C:\\Windows",
-		&si,
-		&NewProcess);
-	if (!bCreateProcess) {
-		cout << "Erro na criacao do processo! Codigo = %d\n" << GetLastError << endl;
-	}
-	else {
-		cout << "Processo Criado com sucesso!" << endl;
-	}
-
 	
-
-
-	return EXIT_SUCCESS;
 }
 
