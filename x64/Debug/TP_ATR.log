@@ -1,0 +1,6 @@
+﻿  TP_ATR.cpp
+TP_ATR.obj : error LNK2019: símbolo externo não resolvido, __imp_sem_init, referenciado na função main
+TP_ATR.obj : error LNK2019: símbolo externo não resolvido, __imp_sem_wait, referenciado na função "void __cdecl Wait(struct sem_t_ * *)" (?Wait@@YAXPEAPEAUsem_t_@@@Z)
+TP_ATR.obj : error LNK2019: símbolo externo não resolvido, __imp_sem_post, referenciado na função "void __cdecl Signal(struct sem_t_ * *)" (?Signal@@YAXPEAPEAUsem_t_@@@Z)
+D:\Arquivos de Programa\pthreads-w32-2-9-1-release\Pre-built.2\lib\x86\pthreadVC2.lib : warning LNK4272: o tipo de máquina da biblioteca 'x86' está em conflito com o tipo de máquina de destino 'x64'
+D:\Lara\Materias\ATR\TP_ATR\tp_atr\x64\Debug\TP_ATR.exe : fatal error LNK1120: 3 externo não resolvidos
